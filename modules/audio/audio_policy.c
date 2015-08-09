@@ -99,7 +99,8 @@ static audio_io_handle_t ap_get_output(struct audio_policy *pol,
                                        uint32_t sampling_rate,
                                        audio_format_t format,
                                        audio_channel_mask_t channelMask,
-                                       audio_output_flags_t flags)
+                                       audio_output_flags_t flags,
+                                       const audio_offload_info_t *info)
 {
     return 0;
 }
@@ -164,7 +165,6 @@ static int ap_get_stream_volume_index(const struct audio_policy *pol,
     return -ENOSYS;
 }
 
-#ifndef ICS_AUDIO_BLOB
 static int ap_set_stream_volume_index_for_device(struct audio_policy *pol,
                                       audio_stream_type_t stream,
                                       int index,
@@ -180,7 +180,6 @@ static int ap_get_stream_volume_index_for_device(const struct audio_policy *pol,
 {
     return -ENOSYS;
 }
-#endif
 
 static uint32_t ap_get_strategy_for_stream(const struct audio_policy *pol,
                                            audio_stream_type_t stream)
@@ -231,6 +230,12 @@ static int ap_dump(const struct audio_policy *pol, int fd)
     return -ENOSYS;
 }
 
+static bool ap_is_offload_supported(const struct audio_policy *pol,
+                                   const audio_offload_info_t *info)
+{
+    return false;
+}
+
 static int create_default_ap(const struct audio_policy_device *device,
                              struct audio_policy_service_ops *aps_ops,
                              void *service,
@@ -269,10 +274,8 @@ static int create_default_ap(const struct audio_policy_device *device,
     dap->policy.init_stream_volume = ap_init_stream_volume;
     dap->policy.set_stream_volume_index = ap_set_stream_volume_index;
     dap->policy.get_stream_volume_index = ap_get_stream_volume_index;
-#ifndef ICS_AUDIO_BLOB
     dap->policy.set_stream_volume_index_for_device = ap_set_stream_volume_index_for_device;
     dap->policy.get_stream_volume_index_for_device = ap_get_stream_volume_index_for_device;
-#endif
     dap->policy.get_strategy_for_stream = ap_get_strategy_for_stream;
     dap->policy.get_devices_for_stream = ap_get_devices_for_stream;
     dap->policy.get_output_for_effect = ap_get_output_for_effect;
@@ -281,6 +284,8 @@ static int create_default_ap(const struct audio_policy_device *device,
     dap->policy.set_effect_enabled = ap_set_effect_enabled;
     dap->policy.is_stream_active = ap_is_stream_active;
     dap->policy.dump = ap_dump;
+
+    dap->policy.is_offload_supported = ap_is_offload_supported;
 
     dap->service = service;
     dap->aps_ops = aps_ops;
