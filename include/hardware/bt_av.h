@@ -57,12 +57,24 @@ typedef void (* btav_connection_priority_callback)(bt_bdaddr_t *bd_addr);
  */
 typedef void (* btav_audio_focus_request_callback)(int enable,
                                                bt_bdaddr_t *bd_addr);
+
+/** Callback for audio configuration change.
+ *  Used only for the A2DP sink interface.
+ *  state will have one of the values from btav_audio_state_t
+ *  sample_rate: sample rate in Hz
+ *  channel_count: number of channels (1 for mono, 2 for stereo)
+ */
+typedef void (* btav_audio_config_callback)(bt_bdaddr_t *bd_addr,
+                                                uint32_t sample_rate,
+                                                uint8_t channel_count);
+
 /** BT-AV callback structure. */
 typedef struct {
     /** set to sizeof(btav_callbacks_t) */
     size_t      size;
     btav_connection_state_callback  connection_state_cb;
     btav_audio_state_callback audio_state_cb;
+    btav_audio_config_callback audio_config_cb;
     btav_connection_priority_callback connection_priority_cb;
     btav_audio_focus_request_callback audio_focus_request_cb;
 } btav_callbacks_t;
@@ -77,7 +89,9 @@ typedef struct {
  *    android_audio_hw library and the Bluetooth stack.
  *
  */
-/** Represents the standard BT-AV interface. */
+/** Represents the standard BT-AV interface.
+ *  Used for both the A2DP source and sink interfaces.
+ */
 typedef struct {
 
     /** set to sizeof(btav_interface_t) */
@@ -111,6 +125,34 @@ typedef struct {
     /** Send audio focus status to bluedroid*/
     void (*audio_focus_status)( int is_enable );
 } btav_interface_t;
+
+typedef struct {
+
+    /** set to sizeof(btav_interface_t) */
+    size_t          size;
+    /**
+     * Register the BtAv callbacks
+     */
+    bt_status_t (*init)( btav_callbacks_t* callbacks );
+
+    /** connect to headset */
+    bt_status_t (*connect)( bt_bdaddr_t *bd_addr );
+
+    /** dis-connect from headset */
+    bt_status_t (*disconnect)( bt_bdaddr_t *bd_addr );
+
+    /** Closes the interface. */
+    void  (*cleanup)( void );
+
+    /* suspend stream for A2DP Sink */
+    void (*suspend_sink)( void );
+
+    /* resume stream for A2DP Sink */
+    void (*resume_sink)( void );
+
+    /* inform audio focus state */
+    void (*audio_focus_status)( int is_enable );
+} btav_sink_interface_t;
 
 __END_DECLS
 
