@@ -401,12 +401,15 @@ typedef void (* btrc_passthrough_rsp_callback) (int id, int key_state);
 
 typedef void (* btrc_connection_state_callback) (bool state, bt_bdaddr_t *bd_addr);
 
+typedef void (* btrc_get_element_attr_rsp_callback) (uint8_t num_attr, btrc_element_attr_val_t *p_attrs);
+
 /** BT-RC Controller callback structure. */
 typedef struct {
     /** set to sizeof(BtRcCallbacks) */
     size_t      size;
     btrc_passthrough_rsp_callback               passthrough_rsp_cb;
     btrc_connection_state_callback              connection_state_cb;
+    btrc_get_element_attr_rsp_callback          get_element_attr_rsp_cb;
 } btrc_ctrl_callbacks_t;
 
 /** Represents the standard BT-RC AVRCP Controller interface. */
@@ -421,6 +424,9 @@ typedef struct {
 
     /** send pass through command to target */
     bt_status_t (*send_pass_through_cmd) ( bt_bdaddr_t *bd_addr, uint8_t key_code, uint8_t key_state );
+
+    /** Get media attributes of current song */
+    bt_status_t (*get_element_attr) ( bt_bdaddr_t *bd_addr, uint8_t num_attr, btrc_media_attr_t *p_attrs);
 
     /** Closes the interface. */
     void  (*cleanup)( void );
